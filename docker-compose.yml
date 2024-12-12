@@ -1,0 +1,280 @@
+version: '3.8'
+
+22
+
+database: 12
+
+1 x-common:
+
+13
+
+14
+
+&db-environment
+
+# Do not remove the "&db-password" from the end of the line below, it is important
+
+MYSQL PASSWORD: &db-password "CHANGE_ME
+
+MYSQL_ROOT_PASSWORD: "CHANGE_ME_TOO"
+
+panel:
+
+15
+
+# for Panel functionality.
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23 APP TIMEZONE: "UTC"
+
+24
+
+25
+
+26
+
+27
+
+&panel-environment
+
+# This URL should be the URL that your reverse proxy routes to the panel server
+
+APP_URL: "https://pterodactyl.example.com"
+
+#A list of valid timezones can be found here: http://php. net/manual/en/timezones.php
+
+APP_SERVICE AUTHOR: "noreply@example.com"
+
+TRUSTED_PROXIES: **" # Set this to your proxy IP
+
+# Uncomment the line below and set to a non-empty
+
+value if you want to use Let's Encrypt
+
+# to generate an SSL certificate for the Panel.
+
+28
+
+# LE_EMAIL:
+
+&mail-environment
+
+29
+
+mail:
+
+30
+
+31 MAIL FROM: "noreply@example.com"
+
+32 MAIL DRIVER: "smtp"
+
+33 MAIL HOST: "mail"
+
+34 MAIL PORT: "1025"
+
+35
+
+MAIL USERNAME:
+
+36
+
+MAIL PASSWORD:
+MAIL ENCRYPTION: "true"
+
+38
+
+39 #
+
+40#
+
+11# DANGER ZONE BELOW
+
+12#
+
+VEB 22
+
+13
+
+# The remainder of this file likely does not need to be changed. Please only make modifications
+
+44# below if you understand what you are doing.
+
+45#
+
+16 services:
+
+47
+
+database:
+
+48
+
+image: mariadb:10.5
+
+49
+
+restart: always
+
+50
+
+command: -default-authentication-plugin=
+
+mysql_native_password
+
+51
+
+volumes:
+
+52
+
+"/srv/pterodactyl/database:/var/lib/mysql
+
+53
+
+environment:
+
+54
+
+<<: *db-environment
+
+55
+
+MYSQL DATABASE: "panel"
+
+56
+
+MYSQL USER: "pterodactyl"
+
+57
+
+cache:
+
+58
+
+image: redis:alpine
+
+59
+
+restart: always
+
+50
+
+panel:
+
+image: ghcr.io/pterodactyl/panel:latest
+ports:
+
+54
+
+*80:80"
+
+55
+
+- "443:443"
+
+56
+
+links:
+
+57
+
+database
+
+58
+
+- cache
+
+59
+
+volumes:
+
+20
+
+72
+
+73
+
+74
+
+75
+
+76
+
+27
+
+78
+
+29
+
+"/srv/pterodactyl/var/:/app/var/"
+
+-"/srv/pterodactyl/nginx/:/etc/nginx/http.d/"
+
+-"/srv/pterodactyl/certs/:/etc/letsencrypt/
+
+"/srv/pterodactyl/logs/:/app/storage/logs
+
+environment:
+
+<<<: [*panel-environment, *mail-environment]
+
+DB_PASSWORD: *db-password
+
+APP_ENV: "production"
+
+APP_ENVIRONMENT_ONLY: "false"
+
+CACHE_DRIVER: "redis"
+
+30
+
+SESSION_DRIVER: "redis"
+
+31
+
+QUEUE_DRIVER: "redis"
+
+32
+
+REDIS_HOST: "cache"
+
+33
+
+DB_HOST: "database"
+
+34
+
+DB_PORT: "3306"
+
+35 networks:
+
+36
+
+default:
+
+37
+
+ipam:
+
+38
+
+config:
+
+39
+
+subnet: 172.20.0.0/16
+
